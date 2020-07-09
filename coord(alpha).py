@@ -34,9 +34,9 @@ def coord_wrt_alpha(a, e, i, w):
 
 if __name__ == '__main__':
     a = 4.0  # in terms of Rs
-    e = 0.0
-    i = 0  # rad
-    w = 0  # rad
+    e = 0.5
+    i = 85  # deg
+    w = 0  # deg
     if len(sys.argv) == 2:
         a = float(sys.argv[1])
     elif len(sys.argv) == 3:
@@ -45,9 +45,6 @@ if __name__ == '__main__':
         a, e, i = float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])
     elif len(sys.argv) == 5:
         a, e, i, w = float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])
-
-    i *= (np.pi / 180)
-    w *= (np.pi / 180)
 
     loc_2d, loc_3d = coord_wrt_alpha(a, e, i, w)
 
