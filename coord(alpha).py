@@ -9,8 +9,8 @@ def coord_wrt_alpha(a, e, i, w):
     if a * (1 - e) <= 1.0:
         raise NameError('The planet enter the star, check the params!')
 
-    w *= np.pi/180
-    i *= np.pi/180
+    w *= np.pi / 180
+    i *= np.pi / 180
 
     def xy(alpha):
         nonlocal a, e, i, w
@@ -34,7 +34,7 @@ def coord_wrt_alpha(a, e, i, w):
 
 if __name__ == '__main__':
     a = 4.0  # in terms of Rs
-    e = 0.5
+    e = 0.4
     i = 85  # deg
     w = 0  # deg
     if len(sys.argv) == 2:
