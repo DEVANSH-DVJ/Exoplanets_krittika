@@ -1,14 +1,11 @@
+import copy
 import os
 import sys
 import time
 
-import copy
-import random
-import yaml
-
-import numpy as np
 import matplotlib.pyplot as plt
-from scipy.integrate import solve_ivp
+import numpy as np
+import yaml
 
 dir = os.path.dirname(__file__)
 
@@ -18,6 +15,7 @@ initialize_star = __import__("lum(coord)").initialize_star
 lum_wrt_coord = __import__("lum(coord)").lum_wrt_coord
 
 params_file = os.path.join(os.path.dirname(__file__), "1.yaml")
+
 
 class system(object):
     def __init__(self, file_name, time_split=100, img_split=100, n=1.0):
@@ -42,21 +40,22 @@ class system(object):
         for planet in self.planets:
             planet['index'] = count
             split = self.time_split * planet['period'] / self.total_time
-            planet['alphas'] = alpha_wrt_time(e=planet['eccentricity'], split=int(split))
+            planet['alphas'] = alpha_wrt_time(e=planet['eccentricity'], split=int(split),
+                                              first_periastron=planet['first_periastron'])
             planet['coord_2d'], planet['coord_3d'] = coord_wrt_alpha(a=planet['semi-major'], e=planet['eccentricity'],
-                                              i=planet['inclination'], w=planet['periastron_angle'])
+                                                                     i=planet['inclination'], w=planet['periastron_angle'])
             count += 1
 
         self.star, self.total = initialize_star(limb_func=self.limb_dark, split=img_split)
-        self.timespan = np.linspace(0, int(n)*self.total_time, int(n)*self.time_split+1)
+        self.timespan = np.linspace(0, int(n) * self.total_time, int(n) * self.time_split + 1)
 
     def output(self):
         lum = []
-        for time in self.timespan:
+        for timing in self.timespan:
             update, get_lum, get_star = lum_wrt_coord(copy.deepcopy(self.star), copy.deepcopy(self.total))
             for planet in self.planets:
-                x, y = planet['coord_2d'](planet['alphas'](time / planet['period']))
-                if y*(planet['inclination'] - (np.pi/2)) > 0: # Only the part of orbit which is away from us
+                x, y = planet['coord_2d'](planet['alphas'](timing / planet['period']))
+                if y * (planet['inclination'] - (np.pi / 2)) > 0:  # Only the part of orbit which is away from us
                     continue
                 if x**2 + y**2 > 2 * ((1 + planet['planet_radius'])**2):
                     continue
@@ -67,13 +66,12 @@ class system(object):
 
     def coords(self):
         time_coord = []
-        for time in self.timespan:
+        for timing in self.timespan:
             locs = []
             for planet in self.planets:
-                locs.append(planet['coord_3d'](planet['alphas'](time / planet['period'])))
+                locs.append(planet['coord_3d'](planet['alphas'](timing / planet['period'])))
             time_coord.append(locs)
         return time_coord
-
 
     def limb_dark(self, cosine):
         if len(self.u) == 2:
@@ -82,13 +80,17 @@ class system(object):
             raise NameError('Check the u values')
 
 
-
 if __name__ == '__main__':
+    start = time.time()
+    print("Time : {} seconds; {}".format(round(time.time() - start, 2), "Start"))
+
     params_file = "1.yaml"
     if len(sys.argv) > 1:
         params_file = sys.argv[1]
 
     exoplanets = system(params_file, time_split=10000, img_split=100, n=1.0)
+    print("Time : {} seconds; {}".format(round(time.time() - start, 2), "Initialized the Exoplanets system"))
     lum = exoplanets.output()
     plt.scatter(exoplanets.timespan, lum, s=1, c='b')
+    print("Time : {} seconds; {}".format(round(time.time() - start, 2), "Made the plots"))
     plt.show()
